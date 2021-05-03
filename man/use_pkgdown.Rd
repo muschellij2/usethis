@@ -2,10 +2,13 @@
 % Please edit documentation in R/pkgdown.R
 \name{use_pkgdown}
 \alias{use_pkgdown}
+\alias{use_pkgdown_github_pages}
 \alias{use_pkgdown_travis}
 \title{Use pkgdown}
 \usage{
 use_pkgdown(config_file = "_pkgdown.yml", destdir = "docs")
+
+use_pkgdown_github_pages()
 
 use_pkgdown_travis()
 }
@@ -16,22 +19,26 @@ use_pkgdown_travis()
 }
 \description{
 \href{https://pkgdown.r-lib.org}{pkgdown} makes it easy to turn your package into
-a beautiful website. There are two helper functions:
+a beautiful website. usethis provides two functions help you use pkgdown:
 \itemize{
-\item \code{use_pkgdown()}: creates a pkgdown config file and adds the file and
-destination directory to \code{.Rbuildignore}.
-\item \code{use_pkgdown_travis()}: helps you set up pkgdown for automatic deployment
-on Travis-CI. Specifically, it:
+\item \code{use_pkgdown()}: creates a pkgdown config file, adds relevant files or
+directories to \code{.Rbuildignore} and \code{.gitignore}, and builds favicons if
+your package has a logo.
+\item \code{use_pkgdown_github_pages()}: implements the GitHub setup needed to
+automatically publish your pkgdown site to GitHub pages:
 \itemize{
-\item Adds the \verb{docs/} folder to \code{.gitignore} and \code{.Rbuildignore}.
-\item Builds favicons if your package contains a package logo,
-and adds the resulting \verb{pkgdown/} folder to \code{.Rbuildignore}.
-\item Creates an empty \code{gh-pages} branch for the pkgdown site to be
-deployed to.
-\item Prompts you about what to do next regarding Travis-CI deployment
-keys and updating your \code{.travis.yml}.
+\item \code{\link[=use_github_pages]{use_github_pages()}} prepares to publish the pkgdown site from the
+\code{github-pages} branch
+\item \code{\link[=use_github_action]{use_github_action("pkgdown")}} configures a
+GitHub Action to automatically build the pkgdown site and deploy it via
+GitHub Pages
+\item The pkgdown site's URL is added to the pkgdown configuration file,
+to the URL field of DESCRIPTION, and to the GitHub repo.
 }
 }
+
+\code{use_pkgdown_travis()} is deprecated; we no longer recommend that you use
+Travis-CI.
 }
 \seealso{
 \url{https://pkgdown.r-lib.org/articles/pkgdown.html#configuration}

@@ -1,19 +1,21 @@
-context("GitHub Actions")
-
 test_that("uses_github_actions() reports usage of GitHub Actions", {
-  skip_if_no_git_config()
+  skip_if_no_git_user()
+  skip_if_offline()
 
-  scoped_temporary_package()
+  create_local_package()
   expect_false(uses_github_actions())
   use_git()
   use_git_remote(name = "origin", url = "https://github.com/fake/fake")
-  use_description_field("URL", "https://github.com/fake/fake")
-  use_github_actions()
+  with_mock(
+    use_github_actions_badge = function(name, repo_spec) NULL,
+    use_github_actions()
+  )
   expect_true(uses_github_actions())
 })
 
 test_that("check_uses_github_actions() can throw error", {
-  scoped_temporary_package()
+  create_local_package()
+  withr::local_options(list(crayon.enabled = FALSE))
   expect_error(
     check_uses_github_actions(),
     "Do you need to run `use_github_actions()`?",
@@ -22,15 +24,16 @@ test_that("check_uses_github_actions() can throw error", {
 })
 
 test_that("use_github_actions() configures GitHub Actions", {
-  skip_if_no_git_config()
+  skip_if_no_git_user()
+  skip_if_offline()
 
-  scoped_temporary_package()
+  create_local_package()
   use_git()
   use_git_remote(name = "origin", url = "https://github.com/fake/fake")
-  use_description_field("URL", "https://github.com/fake/fake")
   use_readme_md()
 
   use_github_actions()
+
   expect_proj_dir(".github")
   expect_proj_dir(".github/workflows")
   expect_proj_file(".github/workflows/R-CMD-check.yaml")
@@ -47,32 +50,23 @@ test_that("use_github_actions() configures GitHub Actions", {
   )
 
   # Badge is correct
-  readme_lines <- readLines(proj_path("README.md"))
+  readme_lines <- read_utf8(proj_path("README.md"))
   expect_true(any(grepl("R-CMD-check", readme_lines)))
-})
 
-test_that("use_github_actions() configures .Rbuildignore", {
-  skip_if_no_git_config()
-
-  scoped_temporary_package()
-  expect_false(uses_circleci())
-  use_git()
-  use_git_remote(name = "origin", url = "https://github.com/fake/fake")
-  use_description_field("URL", "https://github.com/fake/fake")
-  use_github_actions()
+  # .github has been Rbuildignored
   expect_true(is_build_ignored("^\\.github$"))
 })
 
 test_that("use_github_action_check_full() configures full GitHub Actions", {
-  skip_if_no_git_config()
+  skip_if_no_git_user()
+  skip_if_offline()
 
-  scoped_temporary_package()
+  create_local_package()
   use_git()
   use_git_remote(name = "origin", url = "https://github.com/fake/fake")
-  use_description_field("URL", "https://github.com/fake/fake")
   use_readme_md()
 
-  use_github_action_check_full()
+  use_github_action_check_full(repo_spec = "OWNER/REPO")
   expect_proj_dir(".github")
   expect_proj_dir(".github/workflows")
   expect_proj_file(".github/workflows/R-CMD-check.yaml")
@@ -92,17 +86,17 @@ test_that("use_github_action_check_full() configures full GitHub Actions", {
   expect_true(length(yml$jobs[[1]]$strategy$matrix) > 0)
 
   # Badge is correct
-  readme_lines <- readLines(proj_path("README.md"))
+  readme_lines <- read_utf8(proj_path("README.md"))
   expect_true(any(grepl("R-CMD-check", readme_lines)))
 })
 
 test_that("use_github_action_check_full() configures the pr commands", {
-  skip_if_no_git_config()
+  skip_if_no_git_user()
+  skip_if_offline()
 
-  scoped_temporary_package()
+  create_local_package()
   use_git()
   use_git_remote(name = "origin", url = "https://github.com/fake/fake")
-  use_description_field("URL", "https://github.com/fake/fake")
 
   use_github_action_pr_commands()
   expect_proj_dir(".github")
@@ -110,18 +104,55 @@ test_that("use_github_action_check_full() configures the pr commands", {
   expect_proj_file(".github/workflows/pr-commands.yaml")
 })
 
-test_that("use_github_actions_tidy() configures the full check and pr commands", {
-  skip_if_no_git_config()
+test_that("use_tidy_github_actions() configures the full check and pr commands", {
+  skip_if_no_git_user()
+  skip_if_offline()
 
-  scoped_temporary_package()
+  create_local_package()
   use_git()
+  gert::git_add(".gitignore", repo = git_repo())
+  gert::git_commit("a commit, so we are not on an unborn branch", repo = git_repo())
   use_git_remote(name = "origin", url = "https://github.com/fake/fake")
-  use_description_field("URL", "https://github.com/fake/fake")
   use_readme_md()
+  use_tidy_github_actions()
 
-  use_github_actions_tidy()
-  expect_proj_dir(".github")
-  expect_proj_dir(".github/workflows")
   expect_proj_file(".github/workflows/R-CMD-check.yaml")
   expect_proj_file(".github/workflows/pr-commands.yaml")
+  expect_proj_file(".github/workflows/pkgdown.yaml")
+})
+
+test_that("use_github_action() allows for custom urls", {
+  skip_if_no_git_user()
+  skip_if_offline()
+
+  create_local_package()
+  use_git()
+  use_git_remote(name = "origin", url = "https://github.com/fake/fake")
+
+  # Directly call to r-lib actions
+  withr::local_options(usethis.quiet = FALSE)
+  expect_snapshot(
+    use_github_action(
+      url = "https://raw.githubusercontent.com/r-lib/actions/master/examples/check-full.yaml",
+      readme = "https://github.com/r-lib/actions/blob/master/examples/README.md"
+    )
+  )
+  expect_proj_dir(".github")
+  expect_proj_dir(".github/workflows")
+  expect_proj_file(".github/workflows/check-full.yaml")
+})
+
+test_that("use_github_action() appends yaml in name if missing", {
+  skip_if_no_git_user()
+  skip_if_offline()
+
+  create_local_package()
+  use_git()
+  use_git_remote(name = "origin", url = "https://github.com/fake/fake")
+
+  # Directly call to r-lib actions
+  use_github_action("check-full")
+  expect_proj_dir(".github")
+  expect_proj_dir(".github/workflows")
+  expect_proj_file(".github/workflows/check-full.yaml")
 })

@@ -7,17 +7,18 @@
 use_lifecycle()
 }
 \description{
-Call this to import the lifecycle badges and Rd macro into your
-package.
+This helper:
 \itemize{
-\item The SVG badges are imported in \code{man/figures}.
-\item The \code{RdMacros} field of the DESCRIPTION file is updated so you
-can use the \verb{\\\\lifecycle\{\}} macro in your documentation.
+\item Adds lifecycle as a dependency.
+\item Imports \code{\link[lifecycle:deprecated]{lifecycle::deprecated()}} for use in function arguments.
+\item Copies the lifecycle badges into \code{man/figures}.
+\item Reminds you how to use the badge syntax.
 }
 
-See the \href{http://lifecycle.r-lib.org/articles/lifecycle.html}{getting started vignette} of the
-lifecycle package.
+Learn more at \url{https://lifecycle.r-lib.org/articles/communicate.html}
 }
 \seealso{
-\code{\link[=use_lifecycle_badge]{use_lifecycle_badge()}} to signal the \href{https://www.tidyverse.org/lifecycle/}{global lifecycle stage} of your package.
+\code{\link[=use_lifecycle_badge]{use_lifecycle_badge()}} to signal the
+\href{https://lifecycle.r-lib.org/articles/stages.html}{lifecycle stage} of
+your package as whole
 }

@@ -1,30 +1,29 @@
 #' Use lifecycle badges
 #'
 #' @description
+#' This helper:
 #'
-#' Call this to import the lifecycle badges and Rd macro into your
-#' package.
+#' * Adds lifecycle as a dependency.
+#' * Imports [lifecycle::deprecated()] for use in function arguments.
+#' * Copies the lifecycle badges into `man/figures`.
+#' * Reminds you how to use the badge syntax.
 #'
-#' * The SVG badges are imported in `man/figures`.
+#' Learn more at <https://lifecycle.r-lib.org/articles/communicate.html>
 #'
-#' * The `RdMacros` field of the DESCRIPTION file is updated so you
-#'   can use the `\\lifecycle{}` macro in your documentation.
-#'
-#' See the [getting started
-#' vignette](http://lifecycle.r-lib.org/articles/lifecycle.html) of the
-#' lifecycle package.
-#'
-#' @seealso [use_lifecycle_badge()] to signal the [global lifecycle
-#'   stage](https://www.tidyverse.org/lifecycle/) of your package.
-#'
+#' @seealso [use_lifecycle_badge()] to signal the
+#'  [lifecycle stage](https://lifecycle.r-lib.org/articles/stages.html) of
+#'  your package as whole
 #' @export
 use_lifecycle <- function() {
   check_is_package("use_lifecycle()")
+  check_uses_roxygen("use_lifecycle()")
+  if (!uses_roxygen_md()) {
+    ui_stop("
+      Turn on roxygen2 markdown support {ui_code('use_roxygen_md()')}")
+  }
 
   use_package("lifecycle")
-  use_rd_macros("lifecycle")
-  # silence R CMD check NOTE
-  roxygen_ns_append("@importFrom lifecycle deprecate_soft")
+  use_import_from("lifecycle", "deprecated")
 
   dest_dir <- proj_path("man", "figures")
   create_directory(dest_dir)
@@ -37,15 +36,9 @@ use_lifecycle <- function() {
 
   ui_todo(c(
     "Add badges in documentation topics by inserting one of:",
-    "- \\lifecycle{{experimental}}",
-    "- \\lifecycle{{maturing}}",
-    "- \\lifecycle{{stable}}",
-    "- \\lifecycle{{superseded}}",
-    "- \\lifecycle{{questioning}}",
-    "- \\lifecycle{{soft-deprecated}}",
-    "- \\lifecycle{{deprecated}}",
-    "- \\lifecycle{{defunct}}",
-    "- \\lifecycle{{archived}}"
+    "#' `r lifecycle::badge('experimental')`",
+    "#' `r lifecycle::badge('superseded')`",
+    "#' `r lifecycle::badge('deprecated')`"
   ))
 
   invisible(TRUE)

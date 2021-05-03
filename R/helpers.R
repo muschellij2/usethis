@@ -2,6 +2,8 @@ use_description_field <- function(name,
                                   value,
                                   base_path = proj_get(),
                                   overwrite = FALSE) {
+  # account for `value`s produced via `glue::glue()`
+  value <- as.character(value)
   curr <- desc::desc_get(name, file = base_path)[[1]]
   curr <- gsub("^\\s*|\\s*$", "", curr)
 
@@ -11,7 +13,7 @@ use_description_field <- function(name,
 
   if (!is.na(curr) && !overwrite) {
     ui_stop(
-      "{ui_field(name)} has a different value in DESCRIPTION.\\
+      "{ui_field(name)} has a different value in DESCRIPTION. \\
       Use {ui_code('overwrite = TRUE')} to overwrite."
     )
   }
@@ -25,11 +27,8 @@ use_dependency <- function(package, type, min_version = NULL) {
   stopifnot(is_string(package))
   stopifnot(is_string(type))
 
-  if (package != "R" && !is_installed(package)) {
-    ui_stop(c(
-      "{ui_value(package)} must be installed before you can ",
-      "take a dependency on it."
-    ))
+  if (package != "R") {
+    check_installed(package)
   }
 
   if (isTRUE(min_version)) {
@@ -46,16 +45,17 @@ use_dependency <- function(package, type, min_version = NULL) {
   existing_dep <- deps$package == package
   existing_type <- deps$type[existing_dep]
   existing_ver <- deps$version[existing_dep]
-  is_linking_to <- (existing_type != "LinkingTo" && type == "LinkingTo") ||
-    (existing_type == "LinkingTo" && type != "LinkingTo")
+  is_linking_to <- (existing_type != "LinkingTo" & type == "LinkingTo") |
+    (existing_type == "LinkingTo" & type != "LinkingTo")
 
   # No existing dependency, so can simply add
-  if (!any(existing_dep) || is_linking_to) {
+  if (!any(existing_dep) || any(is_linking_to)) {
     ui_done("Adding {ui_value(package)} to {ui_field(type)} field in DESCRIPTION")
     desc::desc_set_dep(package, type, version = version, file = proj_get())
-    return(invisible())
+    return(invisible(TRUE))
   }
 
+  existing_type <- setdiff(existing_type, "LinkingTo")
   delta <- sign(match(existing_type, types) - match(type, types))
   if (delta < 0) {
     # don't downgrade
@@ -63,6 +63,8 @@ use_dependency <- function(package, type, min_version = NULL) {
       "Package {ui_value(package)} is already listed in \\
       {ui_value(existing_type)} in DESCRIPTION, no change made."
     )
+
+    return(invisible(FALSE))
   } else if (delta == 0 && !is.null(min_version)) {
     # change version
     upgrade <- existing_ver == "*" || numeric_version(min_version) > version_spec(existing_ver)
@@ -86,6 +88,26 @@ use_dependency <- function(package, type, min_version = NULL) {
     }
   }
 
+  invisible(TRUE)
+}
+
+use_system_requirement <- function(requirement) {
+  stopifnot(is_string(requirement))
+  existing_requirements <- desc::desc_get_field("SystemRequirements", default = character(), file = proj_get())
+  existing_requirements <- utils::head(strsplit(existing_requirements, ", ?"), n = 1)
+
+  if (requirement %in% existing_requirements) {
+    return(invisible())
+  }
+
+  new_requirements <- paste0(c(existing_requirements, requirement), collapse = ", ")
+
+  ui_done(
+    "Adding {ui_value(requirement)} to {ui_field('SystemRequirements')} field in DESCRIPTION"
+  )
+
+  desc::desc_set("SystemRequirements", new_requirements)
+
   invisible()
 }
 
@@ -94,7 +116,7 @@ version_spec <- function(x) {
   numeric_version(x)
 }
 
-view_url <- function(..., open = interactive()) {
+view_url <- function(..., open = is_interactive()) {
   url <- paste(..., sep = "/")
   if (open) {
     ui_done("Opening URL {ui_value(url)}")
@@ -104,23 +126,3 @@ view_url <- function(..., open = interactive()) {
   }
   invisible(url)
 }
-
-use_rd_macros <- function(package) {
-  proj <- proj_get()
-
-  if (desc::desc_has_fields("RdMacros", file = proj)) {
-    macros <- desc::desc_get_field("RdMacros", file = proj)
-    macros <- strsplit(macros, ",")[[1]]
-  } else {
-    macros <- character()
-  }
-
-  if (!package %in% macros) {
-    macros <- c(macros, package)
-    macros <- paste0("    ", macros, collapse = ",\n")
-    desc::desc_set(RdMacros = macros, file = proj, normalize = TRUE)
-  }
-
-  invisible()
-}
-

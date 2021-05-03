@@ -22,7 +22,7 @@
 #' \dontrun{
 #' use_tutorial("learn-to-do-stuff", "Learn to do stuff")
 #' }
-use_tutorial <- function(name, title, open = interactive()) {
+use_tutorial <- function(name, title, open = rlang::is_interactive()) {
   stopifnot(is_string(name))
   stopifnot(is_string(title))
 
@@ -34,15 +34,11 @@ use_tutorial <- function(name, title, open = interactive()) {
   use_dependency("learnr", "Suggests")
 
   path <- path(dir_path, asciify(name), ext = "Rmd")
-
-  data <- project_data()
-  data$tutorial_title <- title
-
   new <- use_template(
     "tutorial-template.Rmd",
     save_as = path,
-    data = data,
-    ignore = TRUE,
+    data = list(tutorial_title = title),
+    ignore = FALSE,
     open = open
   )
 

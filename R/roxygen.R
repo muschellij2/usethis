@@ -21,8 +21,10 @@ use_roxygen_md <- function() {
     if (!uses_git()) {
       ui_todo("Use git to ensure that you don't lose any data")
     }
+
+    check_installed("roxygen2md")
     ui_todo(
-      "Run {ui_code('roxygen2md::roxygen2md()')} to convert existing Rd markdown to RMarkdown"
+      "Run {ui_code('roxygen2md::roxygen2md()')} to convert existing Rd commands to RMarkdown"
     )
     ui_todo("Run {ui_code('devtools::document()')} when you're done.")
   }
@@ -59,15 +61,37 @@ roxygen_ns_append <- function(tag) {
     path = proj_path(package_doc_path()),
     block_start = "## usethis namespace: start",
     block_end = "## usethis namespace: end",
-    block_suffix = "NULL"
+    block_suffix = "NULL",
+    sort = TRUE
   )
 }
 
-roxygen_update <- function() {
+roxygen_ns_show <- function() {
+  block_show(
+    path = proj_path(package_doc_path()),
+    block_start = "## usethis namespace: start",
+    block_end = "## usethis namespace: end"
+  )
+}
+
+roxygen_remind <- function() {
   ui_todo("Run {ui_code('devtools::document()')} to update {ui_path('NAMESPACE')}")
   TRUE
 }
 
+roxygen_update_ns <- function(load = is_interactive()) {
+  ui_done("Writing {ui_path('NAMESPACE')}")
+  utils::capture.output(
+    suppressMessages(roxygen2::roxygenise(proj_get(), "namespace"))
+  )
+
+  if (load) {
+    ui_done("Loading {project_name()}")
+    pkgload::load_all(quiet = TRUE)
+  }
+
+  TRUE
+}
 
 # Checkers ----------------------------------------------------------------
 

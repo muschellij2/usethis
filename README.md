@@ -5,16 +5,13 @@
 
 <!-- badges: start -->
 
-[![Travis build
-status](https://travis-ci.org/r-lib/usethis.svg?branch=master)](https://travis-ci.org/r-lib/usethis)
-[![AppVeyor build
-status](https://ci.appveyor.com/api/projects/status/github/r-lib/usethis?branch=master&svg=true)](https://ci.appveyor.com/project/r-lib/usethis)
+[![R-CMD-check](https://github.com/r-lib/usethis/workflows/R-CMD-check/badge.svg)](https://github.com/r-lib/usethis/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/r-lib/usethis/branch/master/graph/badge.svg)](https://codecov.io/gh/r-lib/usethis?branch=master)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/usethis)](https://CRAN.R-project.org/package=usethis)
 [![Lifecycle:
-stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable)
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 <!-- badges: end -->
 
 usethis is a workflow package: it automates repetitive tasks that arise
@@ -63,66 +60,68 @@ library(usethis)
 # Create a new package -------------------------------------------------
 path <- file.path(tempdir(), "mypkg")
 create_package(path)
-#> ✔ Creating '/tmp/RtmpIjDPXx/mypkg/'
-#> ✔ Setting active project to '/private/tmp/RtmpIjDPXx/mypkg'
-#> ✔ Creating 'R/'
-#> ✔ Writing 'DESCRIPTION'
+#> ✓ Creating '/var/folders/03/9x7925g54mncswxx06wpkxl00000gn/T/RtmpxLZ8U3/mypkg/'
+#> ✓ Setting active project to '/private/var/folders/03/9x7925g54mncswxx06wpkxl00000gn/T/RtmpxLZ8U3/mypkg'
+#> ✓ Creating 'R/'
+#> ✓ Writing 'DESCRIPTION'
 #> Package: mypkg
 #> Title: What the Package Does (One Line, Title Case)
 #> Version: 0.0.0.9000
 #> Authors@R (parsed):
-#>     * First Last <first.last@example.com> [aut, cre] (<https://orcid.org/YOUR-ORCID-ID>)
+#>     * First Last <first.last@example.com> [aut, cre] (YOUR-ORCID-ID)
 #> Description: What the package does (one paragraph).
 #> License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
 #>     license
 #> Encoding: UTF-8
-#> LazyData: true
 #> Roxygen: list(markdown = TRUE)
-#> ✔ Writing 'NAMESPACE'
-#> ✔ Setting active project to '<no active project>'
+#> RoxygenNote: 7.1.1
+#> ✓ Writing 'NAMESPACE'
+#> ✓ Setting active project to '<no active project>'
 # only needed since this session isn't interactive
 proj_activate(path)
-#> ✔ Changing working directory to '/tmp/RtmpIjDPXx/mypkg/'
-#> ✔ Setting active project to '/private/tmp/RtmpIjDPXx/mypkg'
+#> ✓ Setting active project to '/private/var/folders/03/9x7925g54mncswxx06wpkxl00000gn/T/RtmpxLZ8U3/mypkg'
+#> ✓ Changing working directory to '/var/folders/03/9x7925g54mncswxx06wpkxl00000gn/T/RtmpxLZ8U3/mypkg/'
 
 # Modify the description ----------------------------------------------
 use_mit_license("My Name")
-#> ✔ Setting License field in DESCRIPTION to 'MIT + file LICENSE'
-#> ✔ Writing 'LICENSE.md'
-#> ✔ Adding '^LICENSE\\.md$' to '.Rbuildignore'
-#> ✔ Writing 'LICENSE'
+#> ✓ Setting License field in DESCRIPTION to 'MIT + file LICENSE'
+#> ✓ Writing 'LICENSE'
+#> ✓ Writing 'LICENSE.md'
+#> ✓ Adding '^LICENSE\\.md$' to '.Rbuildignore'
 
 use_package("MASS", "Suggests")
-#> ✔ Adding 'MASS' to Suggests field in DESCRIPTION
+#> ✓ Adding 'MASS' to Suggests field in DESCRIPTION
 #> ● Use `requireNamespace("MASS", quietly = TRUE)` to test if package is installed
 #> ● Then directly refer to functons like `MASS::fun()` (replacing `fun()`).
 
 # Set up other files -------------------------------------------------
 use_readme_md()
-#> ✔ Writing 'README.md'
+#> ✓ Writing 'README.md'
 
 use_news_md()
-#> ✔ Writing 'NEWS.md'
+#> ✓ Writing 'NEWS.md'
 
 use_test("my-test")
-#> ✔ Adding 'testthat' to Suggests field in DESCRIPTION
-#> ✔ Creating 'tests/testthat/'
-#> ✔ Writing 'tests/testthat.R'
-#> ● Call `use_test()` to initialize a basic test file and open it for editing.
-#> ✔ Increasing 'testthat' version to '>= 2.1.0' in DESCRIPTION
-#> ✔ Writing 'tests/testthat/test-my-test.R'
+#> ✓ Adding 'testthat' to Suggests field in DESCRIPTION
+#> ✓ Setting Config/testthat/edition field in DESCRIPTION to '3'
+#> ✓ Creating 'tests/testthat/'
+#> ✓ Writing 'tests/testthat.R'
+#> ✓ Writing 'tests/testthat/test-my-test.R'
 #> ● Edit 'tests/testthat/test-my-test.R'
 
 x <- 1
 y <- 2
 use_data(x, y)
-#> ✔ Creating 'data/'
-#> ✔ Saving 'x', 'y' to 'data/x.rda', 'data/y.rda'
+#> ✓ Adding 'R' to Depends field in DESCRIPTION
+#> ✓ Creating 'data/'
+#> ✓ Setting LazyData to 'true' in 'DESCRIPTION'
+#> ✓ Saving 'x', 'y' to 'data/x.rda', 'data/y.rda'
+#> ● Document your data (see 'https://r-pkgs.org/data.html')
 
 # Use git ------------------------------------------------------------
 use_git()
-#> ✔ Initialising Git repo
-#> ✔ Adding '.Rhistory', '.RData', '.Rproj.user' to '.gitignore'
+#> ✓ Initialising Git repo
+#> ✓ Adding '.Rproj.user', '.Rhistory', '.Rdata', '.httr-oauth', '.DS_Store' to '.gitignore'
 ```
 
 ## Code of Conduct
